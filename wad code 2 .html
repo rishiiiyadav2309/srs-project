@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DreamLog – SnoozeScience Sprint</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="header-left">
+            <span class="logo-icon">🌙</span>
+            <div>
+                <h1>DreamLog</h1>
+                <p class="subtitle">SnoozeScience Sprint · Sleep & Productivity Analytics</p>
+            </div>
+        </div>
+
+        <div class="header-right">
+            <div id="backendStatus" class="status-pill status-checking">
+                <span class="status-dot"></span> Checking API...
+            </div>
+
+            <button id="seedBtn" class="btn-secondary" title="Load 21 days of realistic sample data for instant demonstration">
+                ⚡ Seed Demo Data
+            </button>
+
+            <button id="printReportBtn" class="btn-secondary">
+                🖨️ Wellness Report
+            </button>
+
+            <div id="authArea">
+                <button id="openAuthModalBtn" class="btn-primary">Sign In / Register</button>
+                <div id="userProfile" class="user-profile hidden">
+                    <span id="userNameDisplay">Student</span>
+                    <button id="logoutBtn" class="btn-link">Logout</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="layout">
+
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <h2>Navigation</h2>
+            </div>
+            <nav>
+                <a href="#dashboard" class="nav-item active">📊 Dashboard</a>
+                <a href="#sleep" class="nav-item">🌙 Sleep Tracker</a>
+                <a href="#productivity" class="nav-item">📚 Study Productivity</a>
+                <a href="#analytics" class="nav-item">📈 Science & Analytics</a>
+                <a href="#insights" class="nav-item">💡 Smart Insights</a>
+                <a href="#exam" class="nav-item">📅 Exam Week Schedule</a>
+                <a href="#report" class="nav-item">📄 Wellness Summary</a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <small>Architecture: HTML5 · CSS3 · JS · Node · Express · MongoDB</small>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main>
+
+            <!-- 1. Dashboard Overview -->
+            <section id="dashboard" class="content-section">
+                <div class="section-header">
+                    <h2>Student Dashboard</h2>
+                    <span class="badge">Live Aggregated Metrics</span>
+                </div>
+
+                <div class="cards">
+                    <div class="card card-purple">
+                        <div class="card-icon">🌙</div>
+                        <h3>Average Sleep</h3>
+                        <p id="avgSleep">0.0 hrs</p>
+                        <span id="sleepStatusBadge" class="card-badge">Awaiting data</span>
+                    </div>
+
+                    <div class="card card-indigo">
+                        <div class="card-icon">📚</div>
+                        <h3>Daily Study</h3>
+                        <p id="avgStudy">0.0 hrs</p>
+                        <span id="studyBadge" class="card-badge">Awaiting data</span>
+                    </div>
+
+                    <div class="card card-teal">
+                        <div class="card-icon">⚡</div>
+                        <h3>Productivity</h3>
+                        <p id="avgProductivity">0.0/10</p>
+                        <span id="prodBadge" class="card-badge">Rating scale 1-10</span>
+                    </div>
+
+                    <div class="card card-amber">
+                        <div class="card-icon">🎯</div>
+                        <h3>Focus Level</h3>
+                        <p id="avgFocus">0.0/5</p>
+                        <span id="focusBadge" class="card-badge">Deep focus scale</span>
+                    </div>
+
+                    <div class="card card-rose">
+                        <div class="card-icon">⏳</div>
+                        <h3>Weekly Sleep Debt</h3>
+                        <p id="sleepDebt">0.0 hrs</p>
+                        <span class="card-badge">8.0 hrs baseline</span>
+                    </div>
+
+                    <div class="card card-cyan">
+                        <div class="card-icon">🔬</div>
+                        <h3>Pearson r</h3>
+                        <p id="pearsonDisplay">--</p>
+                        <span id="correlationText" class="card-badge">Sleep vs Productivity</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. Sleep Tracker Section -->
+            <section id="sleep" class="content-section">
+                <div class="section-header">
+                    <h2>🌙 Sleep Tracker</h2>
+                    <p class="section-desc">Record nightly bed and wake times. Duration is calculated automatically, including cross-midnight transitions.</p>
+                </div>
+
+                <div class="grid-2">
+                    <form id="sleepForm" class="panel-form">
+                        <h3>Log Sleep Session</h3>
+
+                        <div class="form-group">
+                            <label for="sleepDate">Date</label>
+                            <input type="date" id="sleepDate" required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="bedtime">Bedtime</label>
+                                <input type="time" id="bedtime" value="23:00" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="wakeTime">Wake Up</label>
+                                <input type="time" id="wakeTime" value="07:00" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="sleepQuality">Sleep Quality (1-5)</label>
+                                <select id="sleepQuality" required>
+                                    <option value="5">⭐⭐⭐⭐⭐ Excellent (Deep, restful)</option>
+                                    <option value="4" selected>⭐⭐⭐⭐ Good (Minor waking)</option>
+                                    <option value="3">⭐⭐⭐ Fair (Average)</option>
+                                    <option value="2">⭐⭐ Poor (Interrupted/restless)</option>
+                                    <option value="1">⭐ Terrible (Exhausted)</option>
+                                </select>
+                            </div>
+
+                            <div class="duration-preview">
+                                <span class="preview-label">Calculated Duration:</span>
+                                <strong id="calculatedSleepDuration">8.0 hrs</strong>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="sleepNotes">Sleep Notes</label>
+                            <input type="text" id="sleepNotes" placeholder="e.g. Read before bed, avoided late caffeine">
+                        </div>
+
+                        <button type="submit" class="btn-primary">Save Sleep Session</button>
+                    </form>
+
+                    <div class="panel-table">
+                        <h3>Recent Sleep History</h3>
+                        <div class="table-container">
+                            <table id="sleepHistoryTable">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Bedtime</th>
+                                        <th>Wake</th>
+                                        <th>Hours</th>
+                                        <th>Quality</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td colspan="6" class="empty-state">No sleep records found.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. Study Productivity Section -->
+            <section id="productivity" class="content-section">
+                <div class="section-header">
+                    <h2>📚 Study Productivity Tracker</h2>
+                    <p class="section-desc">Log your daily academic study sessions to measure the impact of restorative sleep on focus and output.</p>
+                </div>
+
+                <div class="grid-2">
+                    <form id="studyForm" class="panel-form">
+                        <h3>Log Study Session</h3>
+
+                        <div class="form-group">
+                            <label for="studyDate">Date</label>
+                            <input type="date" id="studyDate" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="studySubject">Subject / Topic</label>
+                            <input type="text" id="studySubject" placeholder="e.g. Algorithms & Data Structures" value="Algorithms & Data Structures" required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="studyHours">Study Hours</label>
+                                <input type="number" id="studyHours" min="0.5" max="24" step="0.5" value="4.0" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="focus">Focus Level (1-5)</label>
+                                <select id="focus" required>
+                                    <option value="5">5 - Laser focused</option>
+                                    <option value="4" selected>4 - Solid concentration</option>
+                                    <option value="3">3 - Moderate focus</option>
+                                    <option value="2">2 - Distracted</option>
+                                    <option value="1">1 - Fatigued / scattered</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="score">Productivity Rating (1 to 10)</label>
+                            <div class="range-wrap">
+                                <input type="range" id="score" min="1" max="10" value="8" oninput="document.getElementById('scoreVal').textContent = this.value">
+                                <span id="scoreVal" class="range-val">8</span>/10
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="studyNotes">Session Notes</label>
+                            <input type="text" id="studyNotes" placeholder="e.g. Finished problem set and reviewed lecture notes">
+                        </div>
+
+                        <button type="submit" class="btn-primary">Save Productivity Session</button>
+                    </form>
+
+                    <div class="panel-table">
+                        <h3>Recent Study History</h3>
+                        <div class="table-container">
+                            <table id="studyHistoryTable">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Subject</th>
+                                        <th>Hours</th>
+                                        <th>Focus</th>
+                                        <th>Rating</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td colspan="6" class="empty-state">No study records found.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. Science & Analytics Section -->
+            <section id="analytics" class="content-section">
+                <div class="section-header">
+                    <h2>📈 Science & Analytics</h2>
+                    <p class="section-desc">Interactive data visualizations showcasing weekly sleep vs study trends and Pearson correlation regression.</p>
+                </div>
+
+                <div class="grid-2">
+                    <div class="chart-card">
+                        <h3>Weekly Sleep vs Study Hours</h3>
+                        <p class="chart-subtitle">Direct day-by-day comparison of recovery vs cognitive load</p>
+                        <div class="chart-wrapper">
+                            <canvas id="weeklyChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <h3>SnoozeScience Scatter & Regression Trendline</h3>
+                        <p class="chart-subtitle">Sleep Duration (hrs) vs Productivity Rating (1-10)</p>
+                        <div class="chart-wrapper">
+                            <canvas id="scatterChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. Smart Insights Section -->
+            <section id="insights" class="content-section">
+                <div class="section-header">
+                    <h2>💡 Smart SnoozeScience Insights</h2>
+                    <p class="section-desc">Automated, evidence-based recommendations derived from your circadian habits and academic performance.</p>
+                </div>
+
+                <div id="insightBox" class="insight-box">
+                    Start recording your sleep and study sessions to generate personalized insights.
+                </div>
+            </section>
+
+            <!-- 6. Exam Week Schedule Planner -->
+            <section id="exam" class="content-section">
+                <div class="section-header">
+                    <h2>📅 Exam Week Sleep & Study Planner</h2>
+                    <p class="section-desc">High academic demands require protected sleep windows. Overstudying past fatigue produces diminishing cognitive returns.</p>
+                </div>
+
+                <div class="exam-planner-container">
+                    <div class="planner-controls">
+                        <label for="examSubjectsCount">Number of upcoming exams:</label>
+                        <select id="examSubjectsCount">
+                            <option value="2">2 Exams</option>
+                            <option value="3" selected>3 Exams</option>
+                            <option value="4">4 Exams</option>
+                            <option value="5">5+ Exams</option>
+                        </select>
+
+                        <label for="targetWakeTime">Desired Morning Wake Up Time:</label>
+                        <input type="time" id="targetWakeTime" value="07:30">
+
+                        <button id="generateScheduleBtn" class="btn-primary">Generate Balanced Schedule</button>
+                    </div>
+
+                    <div id="scheduleResults" class="schedule-results">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- 7. Printable Wellness Report -->
+            <section id="report" class="content-section printable-section">
+                <div class="report-header">
+                    <h2>🌙 DreamLog Student Wellness & Performance Report</h2>
+                    <p>SnoozeScience Sprint Evaluation Summary</p>
+                </div>
+
+                <div class="report-body">
+                    <div class="report-stats">
+                        <div class="report-stat-item">
+                            <span class="stat-label">Average Sleep Duration</span>
+                            <span id="repAvgSleep" class="stat-value">--</span>
+                        </div>
+                        <div class="report-stat-item">
+                            <span class="stat-label">Average Daily Study</span>
+                            <span id="repAvgStudy" class="stat-value">--</span>
+                        </div>
+                        <div class="report-stat-item">
+                            <span class="stat-label">Productivity Rating</span>
+                            <span id="repAvgProd" class="stat-value">--</span>
+                        </div>
+                        <div class="report-stat-item">
+                            <span class="stat-label">Sleep Debt Accumulation</span>
+                            <span id="repSleepDebt" class="stat-value">--</span>
+                        </div>
+                        <div class="report-stat-item">
+                            <span class="stat-label">Correlation Coefficient (r)</span>
+                            <span id="repCorrelation" class="stat-value">--</span>
+                        </div>
+                    </div>
+
+                    <div class="report-clinical-notes">
+                        <h3>Faculty Evaluation & Clinical Summary</h3>
+                        <p id="reportSummaryText">Loading data analysis...</p>
+                    </div>
+                </div>
+
+                <div class="no-print" style="margin-top: 20px;">
+                    <button onclick="window.print()" class="btn-primary">🖨️ Print / Save as PDF</button>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <button id="closeAuthModal" class="close-btn">&times;</button>
+            <div class="modal-tabs">
+                <button id="tabLogin" class="modal-tab active">Sign In</button>
+                <button id="tabRegister" class="modal-tab">Register</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" class="auth-form">
+                <div class="form-group">
+                    <label for="loginEmail">Email Address</label>
+                    <input type="email" id="loginEmail" placeholder="student@university.edu" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn-primary full-width">Sign In</button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="registerForm" class="auth-form hidden">
+                <div class="form-group">
+                    <label for="regName">Full Name</label>
+                    <input type="text" id="regName" placeholder="Alex Student" required>
+                </div>
+                <div class="form-group">
+                    <label for="regEmail">Email Address</label>
+                    <input type="email" id="regEmail" placeholder="alex@university.edu" required>
+                </div>
+                <div class="form-group">
+                    <label for="regPassword">Password (minimum 6 characters)</label>
+                    <input type="password" id="regPassword" minlength="6" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn-primary full-width">Create Student Account</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
